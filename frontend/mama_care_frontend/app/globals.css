@@ -1,0 +1,355 @@
+/**
+ * globals.css — MamaCare AI Design System
+ *
+ * Structure:
+ *   1. Tailwind v4 import
+ *   2. @theme  — design tokens (colours, fonts, shadows, etc.)
+ *   3. Base    — html/body/focus defaults
+ *   4. Typography
+ *   5. Animations & keyframes
+ *   6. Reusable component classes (buttons, cards, badges)
+ *   7. Responsive layout utilities (grids, flex helpers, section padding)
+ */
+
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   1. DESIGN TOKENS  (Tailwind v4: all custom values go inside @theme)
+   ───────────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Brand colours */
+  --color-primary:       #C0392B; /* deep red — primary CTA, active states */
+  --color-primary-hover: #A93226; /* darker red for hover states */
+  --color-primary-light: #FDECEA; /* pale red tint for backgrounds */
+  --color-primary-dark:  #7B0D1E; /* very dark red for gradients */
+
+  /* Risk level colours (used on badges, cards, and dashboard) */
+  --color-risk-low:      #16A34A; /* green  */
+  --color-risk-moderate: #CA8A04; /* amber  */
+  --color-risk-high:     #EA580C; /* orange */
+  --color-risk-critical: #DC2626; /* red    */
+
+  /* Surface & background colours */
+  --color-bg:        #FFF5F5; /* main page background (light blush) */
+  --color-surface:   #FFFFFF; /* card / panel backgrounds */
+  --color-surface-2: #FFF0F0; /* slightly tinted surface alternative */
+  --color-border:    #F0D9D9; /* border on cards and dividers */
+  --color-dark:      #1A1A1A; /* dark section background */
+  --color-dark-2:    #2D1A1A; /* dark gradient end */
+
+  /* Text colours */
+  --color-text:       #1A1A1A; /* primary body text */
+  --color-text-muted: #6B7280; /* secondary / helper text */
+  --color-text-light: #9CA3AF; /* timestamps, captions */
+
+  /* Font families */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Box shadows */
+  --shadow-card:  0 1px 3px rgba(192,57,43,0.06), 0 4px 16px rgba(192,57,43,0.08);
+  --shadow-hover: 0 4px 12px rgba(192,57,43,0.12), 0 12px 32px rgba(192,57,43,0.10);
+  --shadow-modal: 0 8px 32px rgba(0,0,0,0.16);
+
+  /* Transition speeds */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   2. BASE STYLES
+   ───────────────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  min-height: 100vh;
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
+}
+
+/* Accessibility: visible focus ring for keyboard navigation (WCAG 2.1 AA) */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   3. TYPOGRAPHY
+   ───────────────────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  margin: 0;
+}
+
+p { margin: 0; }
+
+/* Gradient text utility — used for accent words in headings */
+.gradient-text {
+  background: linear-gradient(135deg, #C0392B, #FF6B6B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   4. ANIMATIONS & KEYFRAMES
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* Animation utility classes */
+.animate-fade-in-up { animation: fade-in-up 0.6s ease both; }
+.animate-fade-in    { animation: fade-in    0.4s ease both; }
+.animate-float      { animation: float      3s ease-in-out infinite; }
+
+/* Staggered delay helpers */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   5. REUSABLE COMPONENT CLASSES
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Buttons ── */
+
+/** Primary red filled button */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--transition-fast),
+              transform var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(192,57,43,0.35);
+}
+.btn-primary:active { transform: translateY(0); }
+
+/** Ghost button — white outlined, used on coloured backgrounds */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  background-color: transparent;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(255,255,255,0.55);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--transition-fast),
+              border-color var(--transition-fast),
+              transform var(--transition-fast);
+}
+.btn-ghost:hover {
+  background-color: rgba(255,255,255,0.15);
+  border-color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* ── Card ── */
+
+/** Standard white card with red-tinted shadow */
+.card {
+  background-color: var(--color-surface);
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+.card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-3px);
+}
+
+/* ── Risk Badges ── */
+
+/** Coloured pill showing a risk level — import riskBadgeStyle() from lib for dynamic version */
+.risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.risk-low      { background: #DCFCE7; color: var(--color-risk-low); }
+.risk-moderate { background: #FEF9C3; color: var(--color-risk-moderate); }
+.risk-high     { background: #FFEDD5; color: var(--color-risk-high); }
+.risk-critical { background: #FEE2E2; color: var(--color-risk-critical); }
+
+/* ── Section label pill ── */
+
+/** Small uppercase badge above section headings, e.g. "Core Features" */
+.section-label {
+  display: inline-block;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.35rem 1rem;
+  border-radius: 9999px;
+  margin-bottom: 1rem;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   6. RESPONSIVE LAYOUT UTILITIES
+   All layout classes follow a mobile-first approach:
+   - Start with a single column (mobile)
+   - Add columns at sm (640px) and lg (1024px) breakpoints
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/** Max-width content wrapper — centred with horizontal padding */
+.section-container {
+  max-width: 72rem; /* 1152px */
+  margin: 0 auto;
+  padding: 0 1.25rem; /* 20px on mobile */
+}
+@media (min-width: 640px) {
+  .section-container { padding: 0 2rem; }
+}
+@media (min-width: 1024px) {
+  .section-container { padding: 0 3rem; }
+}
+
+/** Consistent vertical section spacing — grows at larger breakpoints */
+.section-padding {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+@media (min-width: 768px) {
+  .section-padding { padding-top: 5.5rem; padding-bottom: 5.5rem; }
+}
+@media (min-width: 1024px) {
+  .section-padding { padding-top: 7rem; padding-bottom: 7rem; }
+}
+
+/** 1 column on mobile → 2 columns on tablet → 3 columns on desktop */
+.grid-1-to-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+@media (min-width: 640px) {
+  .grid-1-to-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .grid-1-to-3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/** 1 column on mobile → 2 columns on desktop (used for split-panel sections) */
+.grid-1-to-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+@media (min-width: 1024px) {
+  .grid-1-to-2 { grid-template-columns: repeat(2, 1fr); }
+}
+
+/** 1 column on mobile → 2 on small tablet → 4 on desktop (steps / stats) */
+.grid-1-to-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+@media (min-width: 640px) {
+  .grid-1-to-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .grid-1-to-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+/**
+ * Flex row that stacks vertically on mobile, goes horizontal on tablet.
+ * Used for CTA button groups.
+ */
+.flex-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  align-items: stretch; /* full-width buttons on mobile */
+}
+@media (min-width: 480px) {
+  .flex-cta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/**
+ * Language badge row — wraps nicely on all screen sizes.
+ */
+.lang-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+/** Hide on mobile, show from 640px+ */
+.hide-mobile { display: none; }
+@media (min-width: 640px) {
+  .hide-mobile { display: block; }
+}
+
+/** Hide on desktop, show only on mobile */
+.hide-desktop { display: block; }
+@media (min-width: 640px) {
+  .hide-desktop { display: none; }
+}
