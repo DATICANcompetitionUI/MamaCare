@@ -24,17 +24,14 @@ export default function CustomDatePicker({
   const initialDate = value ? new Date(value) : new Date();
   const [currentMonth, setCurrentMonth] = useState(initialDate.getMonth());
   const [currentYear, setCurrentYear] = useState(initialDate.getFullYear());
-  const [view, setView] = useState<"days" | "years">("days");
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const yearsContainerRef = useRef<HTMLDivElement>(null);
 
   // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
-        setView("days");
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -90,16 +87,6 @@ export default function CustomDatePicker({
     years.push(y);
   }
 
-  // Scroll to active year when switching to year view
-  useEffect(() => {
-    if (view === "years" && yearsContainerRef.current) {
-      const activeBtn = yearsContainerRef.current.querySelector('button[data-active="true"]');
-      if (activeBtn) {
-        activeBtn.scrollIntoView({ block: "center", behavior: "instant" });
-      }
-    }
-  }, [view]);
-
   // Formatting display value locally for the user's view
   let displayValue = "";
   if (value) {
@@ -139,96 +126,82 @@ export default function CustomDatePicker({
             <button type="button" onClick={handlePrevMonth} style={{ background: "#FFF5F5", color: "#C0392B", border: "none", cursor: "pointer", padding: "0.5rem", borderRadius: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <ChevronLeft size={20} />
             </button>
-            <button 
-              type="button"
-              onClick={() => setView(view === "days" ? "years" : "days")}
-              style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, fontSize: "1rem", color: "#1A1A1A", padding: "0.5rem", borderRadius: "0.5rem" }}
-            >
-              {MONTHS[currentMonth]} {currentYear}
-            </button>
+            
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <select 
+                value={currentMonth} 
+                onChange={(e) => setCurrentMonth(parseInt(e.target.value))}
+                style={{ padding: "0.35rem 0.5rem", borderRadius: "0.5rem", border: "1px solid #E5E7EB", backgroundColor: "#F9FAFB", fontSize: "0.875rem", fontWeight: 600, color: "#1A1A1A", outline: "none", cursor: "pointer" }}
+              >
+                {MONTHS.map((m, i) => (
+                  <option key={m} value={i}>{m}</option>
+                ))}
+              </select>
+              <select 
+                value={currentYear} 
+                onChange={(e) => setCurrentYear(parseInt(e.target.value))}
+                style={{ padding: "0.35rem 0.5rem", borderRadius: "0.5rem", border: "1px solid #E5E7EB", backgroundColor: "#F9FAFB", fontSize: "0.875rem", fontWeight: 600, color: "#1A1A1A", outline: "none", cursor: "pointer" }}
+              >
+                {years.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+
             <button type="button" onClick={handleNextMonth} style={{ background: "#FFF5F5", color: "#C0392B", border: "none", cursor: "pointer", padding: "0.5rem", borderRadius: "0.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <ChevronRight size={20} />
             </button>
           </div>
 
-          {view === "days" ? (
-            <>
-              {/* Day headers */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.25rem", marginBottom: "0.5rem", textAlign: "center", fontSize: "0.75rem", fontWeight: 600, color: "#6B7280" }}>
-                <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
-              </div>
+          {/* Day headers */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.25rem", marginBottom: "0.5rem", textAlign: "center", fontSize: "0.75rem", fontWeight: 600, color: "#6B7280" }}>
+            <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+          </div>
 
-              {/* Grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.25rem" }}>
-                {/* Empty slots */}
-                {Array.from({ length: startDay }).map((_, i) => (
-                  <div key={`empty-${i}`} />
-                ))}
-                
-                {/* Days */}
-                {Array.from({ length: daysInMonth }).map((_, i) => {
-                  const day = i + 1;
-                  // Match string format for exact selection logic
-                  const yyyy = currentYear;
-                  const mm = String(currentMonth + 1).padStart(2, '0');
-                  const dd = String(day).padStart(2, '0');
-                  const dayString = `${yyyy}-${mm}-${dd}`;
-                  
-                  const isSelected = value === dayString;
-                  
-                  const today = new Date();
-                  const isToday = 
-                    today.getFullYear() === currentYear && 
-                    today.getMonth() === currentMonth && 
-                    today.getDate() === day;
+          {/* Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.25rem" }}>
+            {/* Empty slots */}
+            {Array.from({ length: startDay }).map((_, i) => (
+              <div key={`empty-${i}`} />
+            ))}
+            
+            {/* Days */}
+            {Array.from({ length: daysInMonth }).map((_, i) => {
+              const day = i + 1;
+              const yyyy = currentYear;
+              const mm = String(currentMonth + 1).padStart(2, '0');
+              const dd = String(day).padStart(2, '0');
+              const dayString = `${yyyy}-${mm}-${dd}`;
+              
+              const isSelected = value === dayString;
+              
+              const today = new Date();
+              const isToday = 
+                today.getFullYear() === currentYear && 
+                today.getMonth() === currentMonth && 
+                today.getDate() === day;
 
-                  return (
-                    <button
-                      key={day}
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleDayClick(day);
-                      }}
-                      style={{
-                        padding: "0.6rem 0.25rem", borderRadius: "0.5rem", border: "none", cursor: "pointer",
-                        backgroundColor: isSelected ? "#C0392B" : isToday ? "#FFF5F5" : "transparent",
-                        color: isSelected ? "#ffffff" : isToday ? "#C0392B" : "#1A1A1A",
-                        fontWeight: isSelected || isToday ? 700 : 500,
-                        transition: "all 0.2s ease"
-                      }}
-                    >
-                      {day}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            /* Year Selector */
-            <div ref={yearsContainerRef} style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", maxHeight: "250px", overflowY: "auto", paddingRight: "0.5rem" }}>
-              {years.map((y) => (
+              return (
                 <button
-                  key={y}
+                  key={day}
                   type="button"
-                  data-active={y === currentYear}
                   onClick={(e) => {
                     e.preventDefault();
-                    setCurrentYear(y);
-                    setView("days");
+                    handleDayClick(day);
                   }}
                   style={{
-                    padding: "0.75rem 0.25rem", borderRadius: "0.5rem", border: "none", cursor: "pointer",
-                    backgroundColor: y === currentYear ? "#C0392B" : "transparent",
-                    color: y === currentYear ? "#ffffff" : "#1A1A1A",
-                    fontWeight: y === currentYear ? 700 : 500,
+                    padding: "0.6rem 0.25rem", borderRadius: "0.5rem", border: "none", cursor: "pointer",
+                    backgroundColor: isSelected ? "#C0392B" : isToday ? "#FFF5F5" : "transparent",
+                    color: isSelected ? "#ffffff" : isToday ? "#C0392B" : "#1A1A1A",
+                    fontWeight: isSelected || isToday ? 700 : 500,
+                    transition: "all 0.2s ease"
                   }}
                 >
-                  {y}
+                  {day}
                 </button>
-              ))}
-            </div>
-          )}
+              );
+            })}
+          </div>
 
         </div>
       )}
