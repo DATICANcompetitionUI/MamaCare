@@ -23,24 +23,28 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     full_name: str
     role: UserRole
-    # Patient-only fields
-    age: Optional[int] = None
-    gestational_age_weeks: Optional[int] = None
     preferred_language: Optional[Language] = Language.en
-    previous_pregnancies: Optional[int] = 0
-    pre_existing_conditions: Optional[List[str]] = []
     # Provider-only fields
     clinic_name: Optional[str] = None
     license_number: Optional[str] = None
+
+
+class OnboardingRequest(BaseModel):
+    dob: str
+    state_of_residence: str
+    lga: str
+    estimated_due_date: str
+    gestational_age_weeks: int
+    previous_pregnancies: int
+    previous_live_births: int
+    pre_existing_conditions: List[str]
+    allergies: Optional[str] = None
+    provider_code: Optional[str] = None
 
 
 class UpdateProfileRequest(BaseModel):
     full_name: Optional[str] = None
     phone_number: Optional[str] = None
     profile_photo_url: Optional[str] = None
-    age: Optional[int] = None
-    gestational_age_weeks: Optional[int] = None
     preferred_language: Optional[Language] = None
-    previous_pregnancies: Optional[int] = None
-    pre_existing_conditions: Optional[List[str]] = None
     clinic_name: Optional[str] = None

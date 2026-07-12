@@ -28,11 +28,7 @@ Creates the MongoDB user profile after a user signs up on Firebase.
     "role": "patient" | "provider",
     
     // Patient-specific fields (optional)
-    "age": 28,
-    "gestational_age_weeks": 20,
     "preferred_language": "en" | "yo" | "ig" | "ha",
-    "previous_pregnancies": 0,
-    "pre_existing_conditions": ["string"],
     
     // Provider-specific fields (optional)
     "clinic_name": "string",
@@ -44,6 +40,33 @@ Creates the MongoDB user profile after a user signs up on Firebase.
   {
     "message": "User registered successfully",
     "role": "patient"
+  }
+  ```
+
+### `POST /api/v1/auth/onboarding`
+Saves the detailed patient profile from the multi-step onboarding form.
+* **Constraints**: Requires Auth Header. **Patient role only.**
+* **Request Header**: `Authorization: Bearer <token>`
+* **Request Body** (`application/json`):
+  ```json
+  {
+    "dob": "string (ISO date)",
+    "state_of_residence": "string",
+    "lga": "string",
+    "estimated_due_date": "string (ISO date)",
+    "gestational_age_weeks": 20,
+    "previous_pregnancies": 0,
+    "previous_live_births": 0,
+    "pre_existing_conditions": ["string"],
+    "allergies": "optional string",
+    "provider_code": "optional string (e.g. 'abc-123')"
+  }
+  ```
+* **Response** (200 OK):
+  ```json
+  {
+    "message": "Onboarding completed successfully",
+    "provider_code_invalid": true // Optional, only present if the provider_code wasn't found
   }
   ```
 
@@ -77,11 +100,7 @@ Updates specific profile fields.
     "full_name": "string",
     "phone_number": "string",
     "profile_photo_url": "string",
-    "age": 25,
-    "gestational_age_weeks": 15,
     "preferred_language": "en",
-    "previous_pregnancies": 1,
-    "pre_existing_conditions": ["string"],
     "clinic_name": "string"
   }
   ```

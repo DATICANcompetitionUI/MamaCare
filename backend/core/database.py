@@ -23,7 +23,7 @@ async def connect_db():
     await db.provider_notes.create_index([("patient_id", 1), ("created_at", -1)])
     await db.health_tips.create_index([("patient_id", 1), ("date", -1)])
 
-    print("✅ MongoDB connected and indexes created")
+    print("[OK] MongoDB connected and indexes created")
 
 
 async def disconnect_db():

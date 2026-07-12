@@ -22,7 +22,7 @@ def init_firebase():
 
     cred = credentials.Certificate(service_account_dict)
     _firebase_app = firebase_admin.initialize_app(cred)
-    print("✅ Firebase Admin initialized")
+    print("[OK] Firebase Admin initialized")
 
 
 def verify_firebase_token(id_token: str) -> dict:

@@ -7,12 +7,13 @@ class Settings(BaseSettings):
     MONGODB_URI: str
     MONGODB_DB_NAME: str = "mamacare_db"
     FIREBASE_SERVICE_ACCOUNT_B64: str
-    FRONTEND_URL: str = "http://localhost:5173"
+    FRONTEND_URL: str = "http://localhost:3000"
     PORT: int = 8000
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 @lru_cache()
