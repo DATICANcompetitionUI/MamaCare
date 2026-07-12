@@ -1,43 +1,61 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import RiskStatusCard from "@/components/dashboard/RiskStatusCard";
 import QuickActions from "@/components/dashboard/QuickActions";
 import RecentPredictions from "@/components/dashboard/RecentPredictions";
 import RecentReports from "@/components/dashboard/RecentReports";
-import { 
-  getDashboardData, 
-  getEmptyDashboardData, 
-  DashboardData 
-} from "@/lib/dashboard-data";
-import { RefreshCw, UserCheck, UserPlus } from "lucide-react";
+import { getDashboardData, DashboardData } from "@/lib/dashboard-data";
+import { RefreshCw } from "lucide-react";
 
 /**
  * Patient Dashboard Main Page.
  * 
- * Orchestrates dashboard components and fetches data. Contains a toggle at the top
- * to preview both the populated (mock history) and empty (new user) states.
+ * Orchestrates dashboard components and fetches actual data from the backend.
  */
 export default function DashboardPage() {
+  const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
-  const [isEmptyState, setIsEmptyState] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Load dashboard data whenever state toggle changes
+  // Listen for auth state and load data
   useEffect(() => {
-    async function loadData() {
-      setIsLoading(true);
-      const dashboardData = isEmptyState 
-        ? await getEmptyDashboardData() 
-        : await getDashboardData();
-      setData(dashboardData);
-      setIsLoading(false);
-    }
-    loadData();
-  }, [isEmptyState]);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          setIsLoading(true);
+          const token = await user.getIdToken();
+          const dashboardData = await getDashboardData(token);
+          
+          if (!dashboardData) {
+            // Data could not be fetched or profile doesn't exist
+            console.warn("Could not load dashboard data, redirecting to onboarding...");
+            // Optional: redirect to onboarding
+            // router.push("/onboarding");
+            setData(null);
+          } else {
+            setData(dashboardData);
+          }
+        } catch (error) {
+          console.error("Error fetching dashboard data:", error);
+          setData(null);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        // Not authenticated
+        router.push("/login");
+      }
+    });
 
-  if (isLoading || !data) {
+    return () => unsubscribe();
+  }, [router]);
+
+  if (isLoading) {
     return (
       <div style={{
         display: "flex",
@@ -68,81 +86,39 @@ export default function DashboardPage() {
     );
   }
 
+  // Provide a fallback empty object so that the beautiful empty states are shown
+  // if the backend hasn't generated profile data yet.
+  const displayData = data || {
+    profile: {
+      fullName: "User",
+      gestationalWeek: 0,
+      edd: "",
+      daysUntilDue: 0,
+      conditions: [],
+      provider: null
+    },
+    latestPrediction: null,
+    recentPredictions: [],
+    recentReports: []
+  };
+
+  // Handle empty states where arrays might be empty or null
+  const latestPrediction = displayData.latestPrediction || null;
+  const recentPredictions = displayData.recentPredictions || [];
+  const recentReports = displayData.recentReports || [];
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       
-      {/* ── Preview Mode Toggle Bar ────────────────────────────────────────── */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        backgroundColor: "#FFFFFF",
-        border: "1px solid #F0D9D9",
-        borderRadius: "0.75rem",
-        padding: "0.75rem 1rem",
-        fontSize: "0.875rem",
-        gap: "1rem",
-        flexWrap: "wrap"
-      }}>
-        <span style={{ color: "#6B7280", fontWeight: 500, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <RefreshCw size={14} style={{ animation: isLoading ? "spin 1.5s linear infinite" : "none" }} />
-          Previewing dashboard state:
-        </span>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button
-            onClick={() => setIsEmptyState(false)}
-            style={{
-              padding: "0.375rem 0.75rem",
-              borderRadius: "0.5rem",
-              border: "1px solid",
-              borderColor: !isEmptyState ? "#C0392B" : "#F0D9D9",
-              backgroundColor: !isEmptyState ? "#FFF5F5" : "#FFFFFF",
-              color: !isEmptyState ? "#C0392B" : "#6B7280",
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.375rem",
-              fontSize: "0.8125rem",
-              transition: "all 0.2s ease"
-            }}
-          >
-            <UserCheck size={14} />
-            Amina (Populated)
-          </button>
-          <button
-            onClick={() => setIsEmptyState(true)}
-            style={{
-              padding: "0.375rem 0.75rem",
-              borderRadius: "0.5rem",
-              border: "1px solid",
-              borderColor: isEmptyState ? "#C0392B" : "#F0D9D9",
-              backgroundColor: isEmptyState ? "#FFF5F5" : "#FFFFFF",
-              color: isEmptyState ? "#C0392B" : "#6B7280",
-              fontWeight: 600,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.375rem",
-              fontSize: "0.8125rem",
-              transition: "all 0.2s ease"
-            }}
-          >
-            <UserPlus size={14} />
-            New User (Empty)
-          </button>
-        </div>
-      </div>
-
       {/* ── Dashboard Header Greeting ─────────────────────────────────────── */}
       <DashboardHeader 
-        fullName={data.profile.fullName}
-        gestationalWeek={data.profile.gestationalWeek}
-        daysUntilDue={data.profile.daysUntilDue}
+        fullName={displayData.profile?.fullName || "User"}
+        gestationalWeek={displayData.profile?.gestationalWeek || 0}
+        daysUntilDue={displayData.profile?.daysUntilDue || 0}
       />
 
       {/* ── Main Risk Status Hero Card ────────────────────────────────────── */}
-      <RiskStatusCard prediction={data.latestPrediction} />
+      <RiskStatusCard prediction={latestPrediction as any} />
 
       {/* ── Quick Actions Row ─────────────────────────────────────────────── */}
       <QuickActions />
@@ -159,10 +135,10 @@ export default function DashboardPage() {
         }}
       >
         <div style={{ minWidth: 0 }}>
-          <RecentPredictions predictions={data.recentPredictions} />
+          <RecentPredictions predictions={recentPredictions} />
         </div>
         <div style={{ minWidth: 0 }}>
-          <RecentReports reports={data.recentReports} />
+          <RecentReports reports={recentReports} />
         </div>
       </div>
 

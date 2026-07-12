@@ -209,7 +209,7 @@ export default function RecentPredictions({
         </h2>
 
         <Link
-          href="#"
+          href="/dashboard/assessment"
           style={{
             fontSize: "0.875rem",
             fontWeight: 600,
@@ -234,11 +234,12 @@ export default function RecentPredictions({
           <EmptyState />
         ) : (
           visible.map((pred, i) => (
-            <TimelineEntry
-              key={pred.id}
-              prediction={pred}
-              isLast={i === visible.length - 1}
-            />
+            <Link key={pred.id} href={`/dashboard/assessment/details/${pred.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+              <TimelineEntry
+                prediction={pred}
+                isLast={i === visible.length - 1}
+              />
+            </Link>
           ))
         )}
       </div>

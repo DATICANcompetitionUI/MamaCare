@@ -1,20 +1,16 @@
 from pydantic import BaseModel
 from typing import Optional, List
 
-
 class HealthInputData(BaseModel):
-    age: int
-    gestational_age_weeks: int
-    bp_systolic: int
-    bp_diastolic: int
-    blood_sugar: float
-    temperature: float
-    heart_rate: int
-    symptoms: List[str]  # e.g. ["headache", "swelling", "blurred_vision"]
-    previous_pregnancies: int
-    pre_existing_conditions: List[str]  # e.g. ["diabetes", "hypertension"]
+    gestational_age_weeks: Optional[int] = None
+    bp: Optional[str] = None # e.g. "120/80"
+    blood_sugar: Optional[float] = None
+    temperature: Optional[float] = None
+    heart_rate: Optional[int] = None
+    haemoglobin: Optional[float] = None
+    symptoms: List[str] = []
+    other_info: Optional[str] = ""
     language: Optional[str] = "en"
-
 
 class PredictionResponse(BaseModel):
     id: str

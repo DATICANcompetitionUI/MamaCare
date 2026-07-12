@@ -186,7 +186,7 @@ export default function RecentReports({ reports }: RecentReportsProps) {
         </h2>
 
         <Link
-          href="#"
+          href="/dashboard/reports"
           style={{
             fontSize: "0.875rem",
             fontWeight: 600,
@@ -218,7 +218,9 @@ export default function RecentReports({ reports }: RecentReportsProps) {
           }}
         >
           {visible.map((report) => (
-            <ReportCard key={report.id} report={report} />
+            <Link key={report.id} href={`/dashboard/reports/details/${report.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <ReportCard report={report} />
+            </Link>
           ))}
         </div>
       )}

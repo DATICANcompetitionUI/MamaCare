@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
 from datetime import datetime, timezone
 from bson import ObjectId
 import motor.motor_asyncio
@@ -30,6 +30,7 @@ def serialize_report(report: dict) -> dict:
 @router.post("/upload")
 async def upload_report(
     file: UploadFile = File(...),
+    language: str = Form(None),
     current_user: dict = Depends(get_current_patient)
 ):
     """
@@ -46,7 +47,9 @@ async def upload_report(
 
     # Get patient's preferred language
     patient = await db.patient_profiles.find_one({"user_id": uid})
-    language = patient.get("preferred_language", "en") if patient else "en"
+    
+    # Use explicitly requested language, or fallback to profile preference
+    final_language = language if language else (patient.get("preferred_language", "en") if patient else "en")
 
     # Validate file type
     if file.content_type not in ALLOWED_TYPES:
@@ -93,7 +96,7 @@ async def upload_report(
         )
 
     # Gemini summarization
-    ai_result = await summarize_report(extracted_text, language=language)
+    ai_result = await summarize_report(extracted_text, language=final_language)
 
     # Save report record to MongoDB
     report_doc = {
