@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from core.config import get_settings
 from core.database import connect_db, disconnect_db
 from core.firebase import init_firebase
-from routers import auth, predictions, reports, assistant, provider, tips
+from routers import auth, predictions, reports, assistant, provider, tips, dashboard
 
 settings = get_settings()
 
@@ -75,6 +75,7 @@ app.include_router(reports.router)
 app.include_router(assistant.router)
 app.include_router(provider.router)
 app.include_router(tips.router)
+app.include_router(dashboard.router)
 
 
 # ── HEALTH CHECK ──────────────────────────────────────────────

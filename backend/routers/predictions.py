@@ -26,8 +26,53 @@ async def create_prediction(
     db = get_db()
     uid = current_user["uid"]
 
+    # Fetch User & Profile for static data
+    user_doc = await db.users.find_one({"firebase_uid": uid})
+    profile_doc = await db.patient_profiles.find_one({"user_id": uid})
+
+    if not user_doc or not profile_doc:
+        raise HTTPException(status_code=400, detail="User profile incomplete")
+
+    # Calculate Age
+    dob_str = user_doc.get("date_of_birth")
+    age = 25 # Default fallback
+    if dob_str:
+        try:
+            dob = datetime.fromisoformat(dob_str.replace("Z", "+00:00")).replace(tzinfo=timezone.utc)
+            now_dt = datetime.now(timezone.utc)
+            age = now_dt.year - dob.year - ((now_dt.month, now_dt.day) < (dob.month, dob.day))
+        except ValueError:
+            pass
+
+    # Parse Blood Pressure
+    bp_systolic = None
+    bp_diastolic = None
+    if payload.bp:
+        parts = payload.bp.split("/")
+        if len(parts) == 2:
+            try:
+                bp_systolic = int(parts[0].strip())
+                bp_diastolic = int(parts[1].strip())
+            except ValueError:
+                pass
+
+    # Build comprehensive health data package for Gemini
+    health_data = {
+        "age": age,
+        "gestational_age_weeks": payload.gestational_age_weeks or profile_doc.get("gestational_age_weeks", 0),
+        "bp_systolic": bp_systolic,
+        "bp_diastolic": bp_diastolic,
+        "blood_sugar": payload.blood_sugar,
+        "temperature": payload.temperature,
+        "heart_rate": payload.heart_rate,
+        "haemoglobin": payload.haemoglobin,
+        "symptoms": payload.symptoms,
+        "other_info": payload.other_info,
+        "previous_pregnancies": profile_doc.get("previous_pregnancies", 0),
+        "pre_existing_conditions": profile_doc.get("pre_existing_conditions", [])
+    }
+
     # Call Gemini
-    health_data = payload.model_dump()
     ai_result = await predict_risk(health_data, language=payload.language)
 
     now = datetime.now(timezone.utc).isoformat()
