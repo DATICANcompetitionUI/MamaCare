@@ -101,7 +101,10 @@ uvicorn main:app --reload --port:8000
   cd frontend
   pnpm dev
 ```
-   
+6. Live server
+```
+  https://mamacare-piky.onrender.com/
+```
 
 
 ---
